@@ -17,7 +17,7 @@ class Game:
     def __init__(self, file_name):
         '''gets players names and number of strategies'''
         if len(file_name.split('.')) != 2 or file_name.split('.')[1] != "nfg":
-            print("file provided is not in correct format")
+            print("File provided is not in correct format")
             exit(1)
         self.data = open(file_name, "r").readlines()
         temp = [word for word in self.data[1].strip().split("}") if len(word) != 0]  # players names and number of strategies
@@ -28,7 +28,7 @@ class Game:
             exit(1)
         self.plys_num_strats = [int(num) for num in temp[1].strip('{ "').split(' ')]
         if self.num_plys != len(self.plys_num_strats):
-            print("number of players and number of strategies for players are not matching")
+            print("Number of players and number of strategies for players are not matching")
             exit(1)
         self.parse_game()
 
@@ -39,7 +39,7 @@ class Game:
             self.ply_map[name] = Player(name, i, self.plys_num_strats)
         score = [float(num) for num in self.data[3].strip().split(" ")]
         if len(score) != np.prod(self.plys_num_strats)*self.num_plys:
-            print("number of utilities given doesn't match the requirement")
+            print("Number of utilities given doesn't match the requirement")
             exit(1)
         # denotes index in utility map for each player
         ind_arr = np.zeros(self.num_plys, dtype=int)
@@ -60,7 +60,7 @@ class Game:
                 if sum(self.utility[i, j]) != 0:
                     print("Input given is not zero sum game")
                     exit(1)
-        print(self.utility)
+        # print(self.utility)
         self.PSNE()
 
     def PSNE(self):
@@ -79,6 +79,7 @@ class Game:
         a1 = set(a1)
         a2 = set(a2)
         e = list(a1.intersection(a2))
+        e.sort()
         print(len(e))
         for i in range(len(e)):
             print(e[i][0], e[i][1])
