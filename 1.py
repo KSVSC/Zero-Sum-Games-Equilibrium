@@ -63,7 +63,6 @@ class Game:
         print(self.utility)
         self.PSNE()
 
-
     def PSNE(self):
         a1 = []
         for i in range(self.plys_num_strats[1]):
