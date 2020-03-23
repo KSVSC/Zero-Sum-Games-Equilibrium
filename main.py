@@ -125,10 +125,10 @@ class Game:
 
         # Printing the mixed strategies computed
         for i in player1_strat:
-            print("{:.3f}".format(i),end=" ")
+            print("{:.2f}".format(i),end=' ')
         print(" ")
         for i in player2_strat:
-            print("{:.3f}".format(i),end=" ")
+            print("{:.2f}".format(i),end=' ')
         print(" ")
 
 
