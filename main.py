@@ -106,10 +106,10 @@ class Game:
         constraints2.append(cp.sum(p) == 1)
 
         for row_ply_turn in utils2:
-            constraints1.append(cp.sum(q @ row_ply_turn) - Z >= 0)
+            constraints1.append(cp.sum(q * row_ply_turn) - Z >= 0)
 
         for col_ply_turn in utils2.T:
-            constraints2.append(cp.sum(p @ col_ply_turn) - W <= 0)
+            constraints2.append(cp.sum(p * col_ply_turn) - W <= 0)
         
         obj1 = cp.Maximize(Z)
         obj2 = cp.Minimize(W)
@@ -133,10 +133,10 @@ class Game:
         player1_strat = round_up(player1_strat)
         player2_strat = round_up(player2_strat)
         for i in player1_strat:
-            print(i, end=" ")
+            print(i,end=" ")
         print(" ")
         for i in player2_strat:
-            print(i, end=" ")
+            print(i,end=" ")
         print(" ")   
 
 
