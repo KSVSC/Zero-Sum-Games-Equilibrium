@@ -93,23 +93,23 @@ class Game:
         # dim(utils) = player1strats x player2strats 
         utils2 = np.reshape(utils[:,0], self.plys_num_strats)
 
-        p = cp.Variable(self.plys_num_strats[0])
-        q = cp.Variable(self.plys_num_strats[1])
+        p = cp.Variable(self.plys_num_strats[0], nonneg=True)
+        q = cp.Variable(self.plys_num_strats[1], nonneg=True)
         Z = cp.Variable()
         W = cp.Variable()
 
 
-        constraints1 = [q >= 0, q <= 1]
-        constraints2 = [p >= 0, p <= 1]
+        constraints1 = []
+        constraints2 = []
 
-        constraints1.append(cp.sum(q) == 1)
-        constraints2.append(cp.sum(p) == 1)
+        constraints1.append(cp.sum(p) == 1)
+        constraints2.append(cp.sum(q) == 1)
 
-        for row_ply_turn in utils2:
-            constraints1.append(cp.sum(q * row_ply_turn) - Z >= 0)
+        for row_ply_turn in utils2.T:
+            constraints1.append(cp.sum(p * row_ply_turn) - Z >= 0)
 
-        for col_ply_turn in utils2.T:
-            constraints2.append(cp.sum(p * col_ply_turn) - W <= 0)
+        for col_ply_turn in utils2:
+            constraints2.append(cp.sum(q * col_ply_turn) - W <= 0)
         
         obj1 = cp.Maximize(Z)
         obj2 = cp.Minimize(W)
@@ -124,20 +124,12 @@ class Game:
         player2_strat = np.array(q.value)
 
         # Printing the mixed strategies computed
-        def round_up(n):
-            if(n>1):
-                return 1
-            return n if n >=  0.0001 else 0
-
-        round_up = np.vectorize(round_up)
-        player1_strat = round_up(player1_strat)
-        player2_strat = round_up(player2_strat)
         for i in player1_strat:
-            print(i, end=" ")
+            print("{:.3f}".format(i),end=" ")
         print(" ")
         for i in player2_strat:
-            print(i, end=" ")
-        print(" ")   
+            print("{:.3f}".format(i),end=" ")
+        print(" ")
 
 
 if __name__ == "__main__":
