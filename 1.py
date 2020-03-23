@@ -63,6 +63,7 @@ class Game:
                     exit(1)
         # print(self.utility)
         self.PSNE()
+        self.minimax()
 
     def PSNE(self):
         a1 = []
