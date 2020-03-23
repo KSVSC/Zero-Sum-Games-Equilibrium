@@ -63,7 +63,7 @@ class Game:
         # print(self.utility)
         self.PSNE()
 
-    sdef PSNE(self):
+    def PSNE(self):
         a1 = []
         for i in range(self.plys_num_strats[1]):
             max_util = np.amax(self.utility[:, i, 0])
