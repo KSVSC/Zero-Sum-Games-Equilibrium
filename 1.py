@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 import itertools
+import cvxpy as cp
 
 
 class Player:
@@ -91,30 +92,26 @@ class Game:
         # dim(utils) = player1strats x player2strats 
         utils2 = np.reshape(utils[:,0], self.plys_num_strats)
 
-        row_player_strat = cp.Variable(self.plys_num_strats[0])
-        col_player_strat = cp.Variable(self.plys_num_strats[1])
-        row_util = cp.Variable()
-        col_util = cp.Variable()
+        p = cp.Variable(self.plys_num_strats[0])
+        q = cp.Variable(self.plys_num_strats[1])
+        Z = cp.Variable()
+        W = cp.Variable()
 
 
-        constraints1 = [row_player_strat >= 0, row_player_strat <= 1]
-        constraints2 = [col_player_strat >= 0, col_player_strat <= 1]
+        constraints1 = [q >= 0, q <= 1]
+        constraints2 = [p >= 0, p <= 1]
 
-        constraints1.append(cp.sum(row_player_strat) == 1)
-        constraints2.append(cp.sum(col_player_strat) == 1)
+        constraints1.append(cp.sum(q) == 1)
+        constraints2.append(cp.sum(p) == 1)
 
         for row_ply_turn in utils2:
-            for i in range(len(row_ply_turn)):
-                temp = col_player_strat[i] * row_ply_turn[i]
-            constraints2.append(row_util - temp >= 0)
+            constraints1.append(cp.sum(q @ row_ply_turn) - Z >= 0)
 
         for col_ply_turn in utils2.T:
-            for i in range(len(col_ply_turn)):
-                temp = row_player_strat[i] * col_ply_turn[i]
-            constraints1.append(col_util + temp <= 0)
+            constraints2.append(cp.sum(p @ col_ply_turn) - W <= 0)
         
-        obj1 = cp.Maximize(row_util)
-        obj2 = cp.Minimize(col_util)
+        obj1 = cp.Maximize(Z)
+        obj2 = cp.Minimize(W)
 
         problem1 = cp.Problem(obj1, constraints1)
         problem2 = cp.Problem(obj2, constraints2)
@@ -122,8 +119,24 @@ class Game:
         problem1.solve()
         problem2.solve()
 
-        print(problem1.status)
-        print(problem2.status)   
+        player1_strat = np.array(p.value)
+        player2_strat = np.array(q.value)
+
+        # Printing the mixed strategies computed
+        def round_up(n):
+            if(n>1):
+                return 1
+            return n if n >=  0.0001 else 0
+
+        round_up = np.vectorize(round_up)
+        player1_strat = round_up(player1_strat)
+        player2_strat = round_up(player2_strat)
+        for i in player1_strat:
+            print(i, end=" ")
+        print(" ")
+        for i in player2_strat:
+            print(i, end=" ")
+        print(" ")   
 
 
 if __name__ == "__main__":
