@@ -63,7 +63,7 @@ class Game:
         # print(self.utility)
         self.PSNE()
 
-    def PSNE(self):
+    sdef PSNE(self):
         a1 = []
         for i in range(self.plys_num_strats[1]):
             max_util = np.amax(self.utility[:, i, 0])
@@ -83,6 +83,47 @@ class Game:
         print(len(e))
         for i in range(len(e)):
             print(e[i][0], e[i][1])
+    
+    def minimax(self):
+        #Fetching the utilities for row player
+        utils = np.reshape(self.utility,(np.prod(self.plys_num_strats), self.num_plys))
+        # utils2 is the matrix representation of the game containing utilities for player1
+        # dim(utils) = player1strats x player2strats 
+        utils2 = np.reshape(utils[:,0], self.plys_num_strats)
+
+        row_player_strat = cp.Variable(self.plys_num_strats[0])
+        col_player_strat = cp.Variable(self.plys_num_strats[1])
+        row_util = cp.Variable()
+        col_util = cp.Variable()
+
+
+        constraints1 = [row_player_strat >= 0, row_player_strat <= 1]
+        constraints2 = [col_player_strat >= 0, col_player_strat <= 1]
+
+        constraints1.append(cp.sum(row_player_strat) == 1)
+        constraints2.append(cp.sum(col_player_strat) == 1)
+
+        for row_ply_turn in utils2:
+            for i in range(len(row_ply_turn)):
+                temp = col_player_strat[i] * row_ply_turn[i]
+            constraints2.append(row_util - temp >= 0)
+
+        for col_ply_turn in utils2.T:
+            for i in range(len(col_ply_turn)):
+                temp = row_player_strat[i] * col_ply_turn[i]
+            constraints1.append(col_util + temp <= 0)
+        
+        obj1 = cp.Maximize(row_util)
+        obj2 = cp.Minimize(col_util)
+
+        problem1 = cp.Problem(obj1, constraints1)
+        problem2 = cp.Problem(obj2, constraints2)
+
+        problem1.solve()
+        problem2.solve()
+
+        print(problem1.status)
+        print(problem2.status)   
 
 
 if __name__ == "__main__":
