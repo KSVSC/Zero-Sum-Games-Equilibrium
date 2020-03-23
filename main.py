@@ -133,10 +133,10 @@ class Game:
         player1_strat = round_up(player1_strat)
         player2_strat = round_up(player2_strat)
         for i in player1_strat:
-            print(i,end=" ")
+            print(i, end=" ")
         print(" ")
         for i in player2_strat:
-            print(i,end=" ")
+            print(i, end=" ")
         print(" ")   
 
 
