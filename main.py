@@ -15,32 +15,33 @@ class Player:
         self.utility = np.ndarray(total_strats)  # utility map for that player
 
 class Game:
-    def __init__(self, file_name):
+    def __init__(self, inp_file, out_file):
         '''gets players names and number of strategies'''
-        if len(file_name.split('.')) != 2 or file_name.split('.')[1] != "nfg":
-            print("File provided is not in correct format")
+        if len(inp_file.split('.')) != 2 or inp_file.split('.')[1] != "nfg":
+            print("Error: File provided is not in correct format")
             exit(1)
-        self.data = open(file_name, "r").readlines()
+        self.data = open(inp_file, "r").readlines()
         temp = [word for word in self.data[1].strip().split("}") if len(word) != 0]  # players names and number of strategies
         self.ply_names = temp[0].strip('{ "').split('" "')
         self.num_plys = len(self.ply_names)
         if self.num_plys != 2:
-            print("Input given is not Two-player game")
+            print("Error: Input given is not Two-player game")
             exit(1)
         self.plys_num_strats = [int(num) for num in temp[1].strip('{ "').split(' ')]
         if self.num_plys != len(self.plys_num_strats):
-            print("Number of players and number of strategies for players are not matching")
+            print("Error: Number of players and number of strategies for players are not matching")
             exit(1)
-        self.parse_game()
+        f = open(out_file, "w")
+        self.parse_game(f)
 
-    def parse_game(self):
+    def parse_game(self,f):
         self.ply_map = dict()
         self.utility = np.zeros(tuple(self.plys_num_strats + [self.num_plys]))
         for i, name in enumerate(self.ply_names):
             self.ply_map[name] = Player(name, i, self.plys_num_strats)
         score = [float(num) for num in self.data[3].strip().split(" ")]
         if len(score) != np.prod(self.plys_num_strats)*self.num_plys:
-            print("Number of utilities given doesn't match the requirement")
+            print("Error: Number of utilities given doesn't match the requirement")
             exit(1)
         # denotes index in utility map for each player
         ind_arr = np.zeros(self.num_plys, dtype=int)
@@ -59,13 +60,13 @@ class Game:
         for i in range(self.plys_num_strats[0]):
             for j in range(self.plys_num_strats[1]):
                 if sum(self.utility[i, j]) != 0:
-                    print("Input given is not zero sum game")
+                    print("Error: Input given is not zero sum game")
                     exit(1)
         # print(self.utility)
-        self.PSNE()
-        self.minimax()
+        self.PSNE(f)
+        self.minimax(f)
 
-    def PSNE(self):
+    def PSNE(self,f):
         a1 = []
         for i in range(self.plys_num_strats[1]):
             max_util = np.amax(self.utility[:, i, 0])
@@ -82,11 +83,13 @@ class Game:
         a2 = set(a2)
         e = list(a1.intersection(a2))
         e.sort()
-        print(len(e))
+        f.write(str(len(e))+"\n")
         for i in range(len(e)):
-            print(e[i][0], e[i][1])
-    
-    def minimax(self):
+            f.write(str(e[i][0])+" "+str(e[i][1]))
+            f.write("\n")
+
+
+    def minimax(self,f):
         #Fetching the utilities for row player
         utils = np.reshape(self.utility,(np.prod(self.plys_num_strats), self.num_plys))
         # utils2 is the matrix representation of the game containing utilities for player1
@@ -117,23 +120,27 @@ class Game:
         problem1 = cp.Problem(obj1, constraints1)
         problem2 = cp.Problem(obj2, constraints2)
 
-        problem1.solve()
-        problem2.solve()
+        problem1.solve(solver=cp.GLPK_MI)
+        problem2.solve(solver=cp.GLPK_MI)
 
         player1_strat = np.array(p.value)
         player2_strat = np.array(q.value)
 
         # Printing the mixed strategies computed
         for i in player1_strat:
-            print("{:.2f}".format(i),end=' ')
-        print(" ")
+            a = round(i,2)
+            f.write(str(a)+" ")
+            # print("{:.2f}".format(i),end=' ')
+        f.write("\n")
         for i in player2_strat:
-            print("{:.2f}".format(i),end=' ')
-        print(" ")
+            a = round(i, 2)
+            f.write(str(a)+" ")
+            # print("{:.2f}".format(i),end=' ')
+        f.write("\n")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) <= 1:
-        print("Usage : python3 main.py input_filename")
+    if len(sys.argv) <= 2:
+        print("Usage : ./run input_filename output_filename")
         exit(1)
-    game = Game(sys.argv[1])
+    game = Game(sys.argv[1], sys.argv[2])
