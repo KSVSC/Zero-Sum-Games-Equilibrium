@@ -9,7 +9,7 @@
 - cvxpy
 
 ### Usage:
-- `/run <input_file> <output_file>`
+- `/run <input_file> <output_file>` or `python3 main.py <input_file> <output_file>` 
 
 ### PSNE
 
